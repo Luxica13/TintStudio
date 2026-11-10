@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "TintStudio",
+    "slug": "tintstudio",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "android": {
+      "package": "com.yourname.tintstudio"
+    }
+  }
+}
