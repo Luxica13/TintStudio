@@ -2,7 +2,7 @@
 
 Individual React Native (Expo) project for ICA 03.
 
-**Student:** [Your Name Here]  |  **Index No.:** [Your Index Number Here]
+**Student:** Luxica Pratheepan  |  **Index No.:** 2022/ICT/118
 
 ## Features
 - Palette Library with search by name, category filter (All, Pastel, Minimal, Vibrant, Dark) and website-purpose filter. All three work together.
