@@ -1,6 +1,6 @@
 # TintStudio – Offline UI Colour Palette & Theme Designer
 
-Individual React Native (Expo) project for ICA 03.
+React Native (Expo) project.
 
 **Student:** Luxica Pratheepan  |  **Index No.:** 2022/ICT/118
 
