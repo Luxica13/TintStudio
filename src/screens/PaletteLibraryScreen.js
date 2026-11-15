@@ -1,19 +1,34 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, TextInput, FlatList, Pressable, ScrollView, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
-import ItemCard from '../components/ItemCard';
+import ThemeCard from '../components/ThemeCard';
 import EmptyState from '../components/EmptyState';
 import LoadingView from '../components/LoadingView';
-import PrimaryButton from '../components/PrimaryButton';
+import Chip from '../components/Chip';
+import OfflineBadge from '../components/OfflineBadge';
 import { initStorage, getPalettes } from '../storage/storage';
 import { PURPOSES } from '../data/starterPalettes';
 import { COLORS, RADIUS } from '../theme';
 
 const CATEGORIES = ['All', 'Pastel', 'Minimal', 'Vibrant', 'Dark'];
 const PURPOSE_OPTIONS = ['Any', ...PURPOSES];
+const SIDE_PADDING = 16;
+const GAP = 12;
 
 export default function PaletteLibraryScreen({ navigation }) {
+  const { width } = useWindowDimensions();
+  const cardWidth = Math.floor((width - SIDE_PADDING * 2 - GAP) / 2);
+
   const [palettes, setPalettes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -59,103 +74,114 @@ export default function PaletteLibraryScreen({ navigation }) {
   };
 
   if (loading) {
-    return <LoadingView message="Loading palettes..." />;
+    return (
+      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+        <LoadingView message="Loading palettes..." />
+      </SafeAreaView>
+    );
   }
 
   if (error) {
     return (
-      <EmptyState
-        title="Something went wrong"
-        message={error}
-        actionLabel="Try again"
-        onAction={loadPalettes}
-      />
+      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+        <EmptyState
+          icon="alert-circle-outline"
+          title="Something went wrong"
+          message={error}
+          actionLabel="Try again"
+          onAction={loadPalettes}
+        />
+      </SafeAreaView>
     );
   }
 
-  return (
-    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
-      <View style={styles.top}>
-        <View style={styles.navRow}>
-          <PrimaryButton
-            label="Saved Themes"
-            variant="secondary"
-            style={styles.navButton}
-            onPress={() => navigation.navigate('SavedThemes')}
-          />
-          <PrimaryButton
-            label="About & Help"
-            variant="secondary"
-            style={styles.navButton}
-            onPress={() => navigation.navigate('About')}
-          />
-        </View>
-
-        <TextInput
-          style={styles.search}
-          value={searchText}
-          onChangeText={setSearchText}
-          placeholder="Search palettes by name"
-          placeholderTextColor={COLORS.muted}
-          autoCorrect={false}
-          clearButtonMode="while-editing"
-        />
-
-        <View style={styles.chips}>
-          {CATEGORIES.map((item) => {
-            const selected = item === category;
-            return (
-              <Pressable
-                key={item}
-                onPress={() => setCategory(item)}
-                style={[styles.chip, selected && styles.chipSelected]}
-              >
-                <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{item}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        <Text style={styles.purposeLabel}>Website purpose</Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={styles.purposeRow}
-        >
-          {PURPOSE_OPTIONS.map((item) => {
-            const selected = item === purpose;
-            return (
-              <Pressable
-                key={item}
-                onPress={() => setPurpose(item)}
-                style={[styles.chip, selected && styles.chipSelected]}
-              >
-                <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{item}</Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
+  // Everything above the grid scrolls together with the cards.
+  const header = (
+    <View>
+      <View style={styles.titleRow}>
+        <Text style={styles.title}>Find your theme</Text>
+        <OfflineBadge />
       </View>
 
+      <View style={styles.searchBox}>
+        <Ionicons name="search" size={22} color={COLORS.muted} />
+        <TextInput
+          style={styles.searchInput}
+          value={searchText}
+          onChangeText={setSearchText}
+          placeholder="Search themes"
+          placeholderTextColor={COLORS.muted}
+          autoCorrect={false}
+        />
+      </View>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.chipRow}
+      >
+        {CATEGORIES.map((item) => (
+          <Chip
+            key={item}
+            label={item}
+            selected={item === category}
+            onPress={() => setCategory(item)}
+            style={styles.chipSpacing}
+          />
+        ))}
+      </ScrollView>
+
+      <Text style={styles.label}>Website type</Text>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.chipRow}
+      >
+        {PURPOSE_OPTIONS.map((item) => (
+          <Chip
+            key={item}
+            label={item}
+            compact
+            selected={item === purpose}
+            onPress={() => setPurpose(item)}
+            style={styles.chipSpacing}
+          />
+        ))}
+      </ScrollView>
+
+      <Text style={styles.count}>
+        Showing {visiblePalettes.length} of {palettes.length} themes
+      </Text>
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <FlatList
         data={visiblePalettes}
         keyExtractor={(item) => item.id}
+        numColumns={2}
+        columnWrapperStyle={styles.column}
         contentContainerStyle={styles.list}
         keyboardShouldPersistTaps="handled"
+        ListHeaderComponent={header}
         renderItem={({ item }) => (
-          <ItemCard
+          <ThemeCard
             title={item.name}
             subtitle={item.category}
             colors={item.colors}
+            width={cardWidth}
             onPress={() => navigation.navigate('PaletteDetails', { palette: item })}
           />
         )}
         ListEmptyComponent={
           <EmptyState
-            title="No palettes found"
-            message="Try a different name, category or website purpose."
-            actionLabel="Clear search & filter"
+            icon="search-outline"
+            title="No themes found"
+            message="Try a different name, category or website type."
+            actionLabel="Clear search & filters"
             onAction={clearFilters}
           />
         }
@@ -165,35 +191,29 @@ export default function PaletteLibraryScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  top: { paddingHorizontal: 16, paddingTop: 12 },
-  navRow: { flexDirection: 'row', marginBottom: 12 },
-  navButton: { flex: 1, marginRight: 8 },
-  search: {
-    height: 48,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: RADIUS.md,
-    paddingHorizontal: 14,
-    fontSize: 16,
-    color: COLORS.text,
+  container: { flex: 1, backgroundColor: COLORS.bg },
+  list: { padding: SIDE_PADDING, paddingBottom: 24 },
+  column: { justifyContent: 'space-between' },
+  titleRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
   },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 12 },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: RADIUS.pill,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginRight: 8,
-    marginBottom: 8,
+  title: { fontSize: 30, fontWeight: '800', color: COLORS.ink, marginRight: 10, marginVertical: 2 },
+  searchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.field,
+    borderRadius: RADIUS.lg,
+    paddingHorizontal: 16,
+    height: 54,
+    marginBottom: 14,
   },
-  chipSelected: { backgroundColor: COLORS.accent, borderColor: COLORS.accent },
-  chipText: { fontSize: 14, color: COLORS.text, fontWeight: '600' },
-  chipTextSelected: { color: '#FFFFFF' },
-  purposeLabel: { fontSize: 14, fontWeight: '700', color: COLORS.muted, marginBottom: 8 },
-  purposeRow: { paddingBottom: 4 },
-  list: { padding: 16, paddingTop: 8 },
+  searchInput: { flex: 1, marginLeft: 10, fontSize: 17, color: COLORS.ink },
+  chipRow: { paddingRight: 8 },
+  chipSpacing: { marginRight: 10 },
+  label: { fontSize: 14, fontWeight: '700', color: COLORS.muted, marginTop: 14, marginBottom: 8 },
+  count: { fontSize: 13, fontWeight: '600', color: COLORS.muted, marginTop: 14, marginBottom: 12 },
 });

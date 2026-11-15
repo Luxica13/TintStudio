@@ -1,16 +1,21 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, FlatList, Alert, StyleSheet } from 'react-native';
+import { View, Text, FlatList, Alert, StyleSheet, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 
-import ItemCard from '../components/ItemCard';
+import ThemeCard from '../components/ThemeCard';
 import EmptyState from '../components/EmptyState';
 import LoadingView from '../components/LoadingView';
-import PrimaryButton from '../components/PrimaryButton';
 import { getSavedThemes, deleteTheme } from '../storage/storage';
 import { COLORS } from '../theme';
 
+const SIDE_PADDING = 16;
+const GAP = 12;
+
 export default function SavedThemesScreen({ navigation }) {
+  const { width } = useWindowDimensions();
+  const cardWidth = Math.floor((width - SIDE_PADDING * 2 - GAP) / 2);
+
   const [themes, setThemes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -27,7 +32,7 @@ export default function SavedThemesScreen({ navigation }) {
     }
   }, []);
 
-  // Runs every time this screen comes into focus, so the list refreshes
+  // Runs every time this tab comes into focus, so the list refreshes
   // after saving, editing or deleting a theme.
   useFocusEffect(
     useCallback(() => {
@@ -54,41 +59,59 @@ export default function SavedThemesScreen({ navigation }) {
   };
 
   if (loading) {
-    return <LoadingView message="Loading saved themes..." />;
+    return (
+      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+        <LoadingView message="Loading saved themes..." />
+      </SafeAreaView>
+    );
   }
 
   if (error) {
     return (
-      <EmptyState
-        title="Could not load saved themes"
-        message={`${error}\n\nYour saved data has not been deleted.`}
-        actionLabel="Try again"
-        onAction={loadThemes}
-      />
+      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+        <EmptyState
+          icon="alert-circle-outline"
+          title="Could not load saved themes"
+          message={`${error}\n\nYour saved data has not been deleted.`}
+          actionLabel="Try again"
+          onAction={loadThemes}
+        />
+      </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <FlatList
         data={themes}
         keyExtractor={(item) => item.id}
+        numColumns={2}
+        columnWrapperStyle={styles.column}
         contentContainerStyle={styles.list}
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <Text style={styles.title}>Saved themes</Text>
+            <Text style={styles.subtitle}>
+              {themes.length === 0
+                ? 'Stored on this device'
+                : `${themes.length} saved on this device. Tap one to edit it.`}
+            </Text>
+          </View>
+        }
         renderItem={({ item }) => (
-          <ItemCard
+          <ThemeCard
             title={item.name}
             subtitle={`Updated ${new Date(item.updatedAt || Date.now()).toLocaleDateString()}`}
             colors={item.colors}
+            width={cardWidth}
+            actionIcon="trash-outline"
+            onAction={() => confirmDelete(item)}
             onPress={() => navigation.navigate('ThemeEditor', { theme: item })}
-          >
-            <PrimaryButton label="Delete" variant="danger" onPress={() => confirmDelete(item)} />
-          </ItemCard>
+          />
         )}
-        ListHeaderComponent={
-          themes.length > 0 ? <Text style={styles.hint}>Tap a theme to edit it.</Text> : null
-        }
         ListEmptyComponent={
           <EmptyState
+            icon="bookmark-outline"
             title="No saved themes yet"
             message="Customise a palette in the editor and tap Save Theme. It will show up here."
             actionLabel="Browse palettes"
@@ -101,7 +124,10 @@ export default function SavedThemesScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  list: { padding: 16 },
-  hint: { color: COLORS.muted, fontSize: 14, marginBottom: 12 },
+  container: { flex: 1, backgroundColor: COLORS.bg },
+  list: { padding: SIDE_PADDING, paddingBottom: 24 },
+  column: { justifyContent: 'space-between' },
+  header: { marginBottom: 16 },
+  title: { fontSize: 30, fontWeight: '800', color: COLORS.ink },
+  subtitle: { fontSize: 14, fontWeight: '600', color: COLORS.muted, marginTop: 4 },
 });
