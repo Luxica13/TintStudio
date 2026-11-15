@@ -16,7 +16,7 @@ import ColorInput from '../components/ColorInput';
 import PrimaryButton from '../components/PrimaryButton';
 import { createTheme, updateTheme } from '../storage/storage';
 import { ROLES, ROLE_KEYS, isValidHex, copyColors, colorsEqual } from '../utils/colors';
-import { COLORS, RADIUS } from '../theme';
+import { COLORS, RADIUS, SHADOW } from '../theme';
 
 const HEX_ERROR = 'Enter a 6-digit HEX code like #9988FF';
 
@@ -115,10 +115,12 @@ export default function ThemeEditorScreen({ route }) {
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
         >
-          <Text style={styles.sectionTitle}>Live Preview</Text>
-          <PreviewDashboard colors={applied} />
+          <Text style={[styles.sectionTitle, styles.firstTitle]}>Live preview</Text>
+          <View style={[styles.card, SHADOW]}>
+            <PreviewDashboard colors={applied} />
+          </View>
 
-          <Text style={styles.sectionTitle}>Theme Name</Text>
+          <Text style={styles.sectionTitle}>Theme name</Text>
           <TextInput
             style={[styles.nameInput, !!nameError && styles.inputError]}
             value={name}
@@ -126,25 +128,27 @@ export default function ThemeEditorScreen({ route }) {
               setName(text);
               setNameError('');
             }}
-            placeholder="e.g. My Purple Theme"
+            placeholder="e.g. Sunset Lemonade"
             placeholderTextColor={COLORS.muted}
             maxLength={40}
           />
           {nameError ? <Text style={styles.error}>{nameError}</Text> : null}
 
           <Text style={styles.sectionTitle}>Colours</Text>
-          {ROLES.map((role) => (
-            <ColorInput
-              key={role.key}
-              label={role.label}
-              description={role.description}
-              value={inputs[role.key]}
-              onChangeText={(text) => handleChange(role.key, text)}
-              error={errors[role.key]}
-              // Show the typed colour if valid, otherwise the last applied one.
-              swatchColor={isValidHex(inputs[role.key]) ? inputs[role.key] : applied[role.key]}
-            />
-          ))}
+          <View style={[styles.card, styles.colorsCard, SHADOW]}>
+            {ROLES.map((role) => (
+              <ColorInput
+                key={role.key}
+                label={role.label}
+                description={role.description}
+                value={inputs[role.key]}
+                onChangeText={(text) => handleChange(role.key, text)}
+                error={errors[role.key]}
+                // Show the typed colour if valid, otherwise the last applied one.
+                swatchColor={isValidHex(inputs[role.key]) ? inputs[role.key] : applied[role.key]}
+              />
+            ))}
+          </View>
 
           {hasUnappliedChanges ? (
             <Text style={styles.hint}>You have changes that are not applied to the preview yet.</Text>
@@ -154,7 +158,7 @@ export default function ThemeEditorScreen({ route }) {
           <View style={styles.buttonRow}>
             <PrimaryButton
               label="Apply Changes"
-              variant="secondary"
+              variant="soft"
               style={styles.rowButton}
               onPress={handleApply}
             />
@@ -178,29 +182,33 @@ export default function ThemeEditorScreen({ route }) {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  container: { flex: 1, backgroundColor: COLORS.background },
+  container: { flex: 1, backgroundColor: COLORS.bg },
   content: { padding: 16, paddingBottom: 32 },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  nameInput: {
-    height: 48,
+  card: {
     backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: RADIUS.md,
-    paddingHorizontal: 14,
-    fontSize: 16,
-    color: COLORS.text,
+    padding: 12,
   },
-  inputError: { borderColor: COLORS.danger },
-  error: { color: COLORS.danger, fontSize: 13, marginTop: 4 },
-  hint: { color: COLORS.accent, fontSize: 14, marginBottom: 8 },
-  message: { color: COLORS.muted, fontSize: 14, marginBottom: 12 },
-  buttonRow: { flexDirection: 'row', marginBottom: 12 },
+  colorsCard: { padding: 16, paddingBottom: 0 },
+  sectionTitle: { fontSize: 18, fontWeight: '800', color: COLORS.ink, marginTop: 22, marginBottom: 10 },
+  firstTitle: { marginTop: 4 },
+  nameInput: {
+    height: 52,
+    backgroundColor: COLORS.field,
+    borderRadius: RADIUS.md,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.ink,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+  },
+  inputError: { borderColor: COLORS.danger, backgroundColor: COLORS.dangerSoft },
+  error: { color: COLORS.danger, fontSize: 13, fontWeight: '600', marginTop: 4 },
+  hint: { color: COLORS.primary, fontSize: 14, fontWeight: '700', marginTop: 12 },
+  message: { color: COLORS.muted, fontSize: 14, marginTop: 12 },
+  buttonRow: { flexDirection: 'row', marginTop: 16, marginBottom: 12 },
   rowButton: { flex: 1, marginRight: 8 },
 });

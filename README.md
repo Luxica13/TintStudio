@@ -1,66 +1,90 @@
 # TintStudio – Offline UI Colour Palette & Theme Designer
 
-Individual React Native (Expo) project for ICA 03.
+TintStudio is an offline app for exploring colour palettes and customising themes for websites and apps.
 
-**Student:** Luxica Pratheepan  |  **Index No.:** 2022/ICT/118
+**Name:** Luxica Pratheepan  
+**Index No.:** 2022/ICT/118
 
 ## Features
-- Palette Library with search by name, category filter (All, Pastel, Minimal, Vibrant, Dark) and website-purpose filter. All three work together.
-- Palette Details with colour roles, HEX codes and "Best for" website purposes.
-- Theme Editor with a sample dashboard preview, HEX validation (`#RRGGBB`), Apply, Reset and Save.
-- Saved Themes: open to edit, delete with confirmation, empty state, data kept after closing the app.
-- About & Help screen.
-- Loading, no-results, empty and error states.
 
-## Tech
-Expo, React Native, JavaScript, React Navigation (native stack), AsyncStorage, React hooks, StyleSheet.
+- **Explore:** Browse palettes using a name search, category filter, and website-type filter. Search and filters can be used together.
+- **Palette Details:** View a colour strip, colour roles, HEX codes, and suggested website purposes.
+- **Theme Editor:** Customise colours with `#RRGGBB` HEX validation, preview them on a sample dashboard, and apply, reset, or save changes.
+- **Saved Themes:** Open themes for editing or delete them with confirmation. Saved themes remain available after closing the app.
+- **About & Help:** Find information about the app and how to use it.
+- Loading, no-results, empty, and error states provide feedback while using the app.
+
+## Design
+
+The interface uses indigo and lavender colours, rounded cards, palette previews, and bottom-tab navigation for Explore, Saved, and Help. Each palette card includes a small website preview using that palette’s colours.
+
+The interface is built with React Native views and `StyleSheet`, with `@expo/vector-icons` for icons.
+
+## Technologies
+
+- Expo and React Native
+- JavaScript and React hooks
+- React Navigation: native stack and bottom tabs
+- AsyncStorage for local data
+- React Native `StyleSheet` for styling
 
 ## Run the project
-See `RUN-GUIDE.md` for step-by-step instructions (VS Code + Expo Go).
 
-Short version:
-```
-npm install
-npx expo install --fix
-npx expo start
-```
+Install Node.js and Expo Go before starting. Open a terminal in the project folder containing `package.json`.
 
-## Folder structure
-```
-App.js                      navigation setup
-index.js                    app entry point
-app.json                    Expo configuration
-package.json               dependencies and scripts
-src/
-  theme.js                  app UI colours, spacing, radius
-  data/starterPalettes.js   20 starter palettes + website purposes list
-  storage/storage.js        all AsyncStorage reading/writing
-  utils/colors.js           colour roles + HEX validation
-  components/               ItemCard, SwatchRow, ColorInput, PreviewDashboard,
-                            PrimaryButton, EmptyState, LoadingView
-  screens/                  PaletteLibrary, PaletteDetails, ThemeEditor,
-                            SavedThemes, About
-```
+1. Install the dependencies:
+
+   ```bash
+   npm install
+   ```
+
+2. Start the Expo development server:
+
+   ```bash
+   npx expo start
+   ```
+
+3. Connect your phone and computer to the same Wi-Fi network, then scan the QR code using Expo Go.
+
+Keep the development server running while testing the app. Palette browsing, theme editing, and saved themes work offline; connecting to the Expo development server is part of this development setup.
+
+## Project structure
+
+| File or folder | Purpose |
+| --- | --- |
+| `App.js` | Navigation setup |
+| `index.js` | App entry point |
+| `app.json` | Expo configuration |
+| `package.json` | Dependencies and scripts |
+| `src/theme.js` | Shared colours, corner radii, and shadows |
+| `src/data/starterPalettes.js` | 20 starter palettes and website purposes |
+| `src/storage/storage.js` | AsyncStorage operations |
+| `src/utils/colors.js` | Colour roles and HEX validation |
+| `src/components/` | Reusable cards, filters, buttons, colour inputs, previews, and feedback views |
+| `src/screens/` | Palette Library, Palette Details, Theme Editor, Saved Themes, and About screens |
 
 ## Local storage
-| Key | Contents |
-| --- | --- |
-| `tintstudio:starterPalettes` | The 20 starter palettes. Written once on first launch only. |
-| `tintstudio:savedThemes` | The user's saved themes (id, name, colours, timestamps). |
 
-- Starter data is copied to storage only if the key does not exist yet, so it is never overwritten on later launches.
-- If saved-theme data cannot be parsed, the app shows an error and refuses to write, so nothing is silently deleted.
-- Each new theme gets a unique ID. Editing a saved theme updates it in place.
+The app uses AsyncStorage to keep the palette dataset and saved themes on the device.
+
+| Storage key | Contents |
+| --- | --- |
+| `tintstudio:starterPalettes` | The 20 starter palettes |
+| `tintstudio:savedThemes` | Saved themes, including IDs, names, colours, and timestamps |
+
+Users can save customised themes, reopen them for editing, and delete themes they no longer need.
 
 ## Dataset reference
-Palette names and moods follow the colour combinations in Figma's "100 color combinations" guide (figma.com/resource-library/color-combinations). The guide shows palettes as images, so the HEX values are my own choices, checked for readable contrast.
+
+Palette names and moods are inspired by Figma’s [100 color combinations guide](https://www.figma.com/resource-library/color-combinations/). The palette HEX values are defined in the local dataset.
 
 ## Assignment requirements
-| Requirement | Where |
+
+| Requirement | Implementation |
 | --- | --- |
-| 5+ screens with navigation | `App.js`, `src/screens/` |
-| Own dataset, stored locally | `src/data/starterPalettes.js`, `src/storage/storage.js` |
-| Dynamic local data | `FlatList` in Library and Saved Themes |
-| Search, filter, detail view | `PaletteLibraryScreen`, `PaletteDetailsScreen` |
-| Works without internet | No network calls anywhere in the code |
-| GitHub repository | Individual repository with regular commits |
+| Five or more screens with navigation | `App.js` and `src/screens/` |
+| Own dataset stored locally | `src/data/starterPalettes.js` and `src/storage/storage.js` |
+| Dynamic local data | `FlatList` in Palette Library and Saved Themes |
+| Search, filter, and detail view | Palette Library and Palette Details screens |
+| Offline functionality | Palette browsing, theme editing, and saved themes work offline |
+| GitHub repository | Individual project with version control and branch-based development |
